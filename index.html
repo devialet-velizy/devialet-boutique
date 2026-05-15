@@ -966,12 +966,13 @@ async function showDay(k,d){
       ${['entrees','demos','tickets','css','decibel'].map(f=>{
         const labels={entrees:'Entrées',demos:'Démos',tickets:'Tickets',css:'CSS',decibel:'Decibel'};
         const vals={entrees,demos,tickets,css,decibel};
-        return`<div class="counter-card" style="padding:14px">
+        return`<div class="counter-card" style="padding:14px;text-align:center">
           <div class="counter-label">${labels[f]}</div>
-          <div class="counter-body" style="justify-content:center;gap:16px">
-            <button class="cnt-btn" style="width:48px;height:48px;font-size:24px" onclick="calDecr('${k}','${f}')">−</button>
-            <input class="cnt-val" type="number" id="cal-${f}" value="${vals[f]}" min="0" style="font-size:32px;max-width:80px;text-align:center" oninput="calSave('${k}')">
-            <button class="cnt-btn plus" style="width:48px;height:48px;font-size:24px" onclick="calIncr('${k}','${f}')">+</button>
+          <div style="font-family:'DM Mono',monospace;font-size:40px;font-weight:600;line-height:1.2;margin:8px 0" id="cal-${f}-display">${vals[f]}</div>
+          <input type="hidden" id="cal-${f}" value="${vals[f]}">
+          <div style="display:flex;gap:10px;justify-content:center">
+            <button class="cnt-btn" style="width:52px;height:52px;font-size:26px;flex-shrink:0" onclick="calDecr('${k}','${f}')">−</button>
+            <button class="cnt-btn plus" style="width:52px;height:52px;font-size:26px;flex-shrink:0" onclick="calIncr('${k}','${f}')">+</button>
           </div>
         </div>`;
       }).join('')}
@@ -1014,7 +1015,13 @@ let calCurrentKey = null;
 let calDayListening = false;
 
 function calGetC(f){ return parseInt(document.getElementById('cal-'+f)?.value)||0; }
-function calSetC(f,v){ const el=document.getElementById('cal-'+f); if(el) el.value=Math.max(0,v); }
+function calSetC(f,v){
+  const val = Math.max(0,v);
+  const inp = document.getElementById('cal-'+f);
+  const disp = document.getElementById('cal-'+f+'-display');
+  if(inp) inp.value = val;
+  if(disp) disp.textContent = val;
+}
 
 function calIncr(k,f){
   calCurrentKey = k;
