@@ -969,7 +969,9 @@ async function showDay(k,d){
         return`<div class="counter-card" style="padding:14px;text-align:center">
           <div class="counter-label">${labels[f]}</div>
           <input type="number" id="cal-${f}" value="${vals[f]}" min="0"
-            style="font-family:'DM Mono',monospace;font-size:40px;font-weight:600;line-height:1.2;margin:8px 0;border:none;background:transparent;width:100%;text-align:center;-moz-appearance:textfield"
+            style="font-family:'DM Mono',monospace;font-size:40px;font-weight:600;line-height:1.2;margin:8px 0;border:2px solid transparent;border-radius:8px;background:transparent;width:100%;text-align:center;-moz-appearance:textfield;cursor:text"
+            onfocus="this.style.borderColor='var(--black)';this.select()"
+            onblur="this.style.borderColor='transparent';calSave('${k}')"
             oninput="calSave('${k}')">
           <div style="display:flex;gap:10px;justify-content:center">
             <button class="cnt-btn" style="width:52px;height:52px;font-size:26px;flex-shrink:0" onclick="calDecr('${k}','${f}')">−</button>
