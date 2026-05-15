@@ -580,16 +580,32 @@ function refreshCurrentPage(){
     const detailOpen = document.getElementById('cal-detail')?.innerHTML?.trim();
     if(!detailOpen){
       renderCal();
-    } else if(calCurrentKey && liveData[calCurrentKey]){
-      // Panneau ouvert — met à jour les compteurs sans fermer
-      const e = liveData[calCurrentKey];
-      calSetC('entrees', e.entrees||0);
-      calSetC('demos', e.demos||0);
-      calSetC('tickets', e.tickets||0);
-      calSetC('css', e.css||0);
-      calSetC('decibel', e.decibel||0);
-      const lbl=document.getElementById('cal-sync-label');
-      if(lbl) lbl.textContent='● Synced';
+    } else {
+      // Panneau ouvert — met à jour toutes les cellules du calendrier
+      document.querySelectorAll('.cal-cell[data-key]').forEach(cell => {
+        const k = cell.getAttribute('data-key');
+        const e = liveData[k];
+        const d = parseInt(k.split('-')[2]);
+        if(e){
+          const dots=e.demos>0?`<div class="cal-dots">${Array(Math.min(e.demos,6)).fill('<div class="cal-dot"></div>').join('')}</div>`:'';
+          const mini=e.entrees>0?`<div class="cal-mini">${e.entrees} entr.</div>`:'';
+          const wasToday=cell.classList.contains('today');
+          const wasSel=cell.classList.contains('sel');
+          cell.className=`cal-cell has-data${wasToday?' today':''}${wasSel?' sel':''}`;
+          cell.innerHTML=`<div class="cal-num">${d}</div>${dots}${mini}`;
+        }
+      });
+      // Met à jour les compteurs du panneau ouvert
+      if(calCurrentKey && liveData[calCurrentKey]){
+        const e = liveData[calCurrentKey];
+        calSetC('entrees', e.entrees||0);
+        calSetC('demos', e.demos||0);
+        calSetC('tickets', e.tickets||0);
+        calSetC('css', e.css||0);
+        calSetC('decibel', e.decibel||0);
+        const lbl=document.getElementById('cal-sync-label');
+        if(lbl) lbl.textContent='● Synced';
+      }
     }
   }
   else if(cur==='p-saisons') renderSaisons();
@@ -978,6 +994,17 @@ async function showDay(k,d){
         calSetC('decibel', entry.decibel||0);
         const lbl=document.getElementById('cal-sync-label');
         if(lbl) lbl.textContent='● Synced';
+      }
+      // Met à jour la cellule du calendrier
+      const cell=document.querySelector(`.cal-cell[data-key="${k}"]`);
+      if(cell){
+        const d=parseInt(k.split('-')[2]);
+        const dots=entry.demos>0?`<div class="cal-dots">${Array(Math.min(entry.demos,6)).fill('<div class="cal-dot"></div>').join('')}</div>`:'';
+        const mini=entry.entrees>0?`<div class="cal-mini">${entry.entrees} entr.</div>`:'';
+        const wasToday=cell.classList.contains('today');
+        const wasSel=cell.classList.contains('sel');
+        cell.className=`cal-cell${entry.entrees>0||entry.demos>0?' has-data':''}${wasToday?' today':''}${wasSel?' sel':''}`;
+        cell.innerHTML=`<div class="cal-num">${d}</div>${dots}${mini}`;
       }
     });
   }
