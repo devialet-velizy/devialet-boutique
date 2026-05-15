@@ -595,16 +595,20 @@ function refreshCurrentPage(){
           cell.innerHTML=`<div class="cal-num">${d}</div>${dots}${mini}`;
         }
       });
-      // Met à jour les compteurs du panneau ouvert
+      // Met à jour les compteurs du panneau ouvert seulement si pas en train de saisir
       if(calCurrentKey && liveData[calCurrentKey]){
-        const e = liveData[calCurrentKey];
-        calSetC('entrees', e.entrees||0);
-        calSetC('demos', e.demos||0);
-        calSetC('tickets', e.tickets||0);
-        calSetC('css', e.css||0);
-        calSetC('decibel', e.decibel||0);
-        const lbl=document.getElementById('cal-sync-label');
-        if(lbl) lbl.textContent='● Synced';
+        const focused = document.activeElement;
+        const isTyping = focused && focused.id && focused.id.startsWith('cal-') && focused.tagName === 'INPUT';
+        if(!isTyping){
+          const e = liveData[calCurrentKey];
+          calSetC('entrees', e.entrees||0);
+          calSetC('demos', e.demos||0);
+          calSetC('tickets', e.tickets||0);
+          calSetC('css', e.css||0);
+          calSetC('decibel', e.decibel||0);
+          const lbl=document.getElementById('cal-sync-label');
+          if(lbl) lbl.textContent='● Synced';
+        }
       }
     }
   }
@@ -992,13 +996,17 @@ async function showDay(k,d){
       liveData[k] = entry;
       // Met à jour les compteurs si le panneau est toujours ouvert
       if(calCurrentKey === k && document.getElementById('cal-entrees')){
-        calSetC('entrees', entry.entrees||0);
-        calSetC('demos',   entry.demos||0);
-        calSetC('tickets', entry.tickets||0);
-        calSetC('css',     entry.css||0);
-        calSetC('decibel', entry.decibel||0);
-        const lbl=document.getElementById('cal-sync-label');
-        if(lbl) lbl.textContent='● Synced';
+        const focused = document.activeElement;
+        const isTyping = focused && focused.id && focused.id.startsWith('cal-') && focused.tagName === 'INPUT';
+        if(!isTyping){
+          calSetC('entrees', entry.entrees||0);
+          calSetC('demos',   entry.demos||0);
+          calSetC('tickets', entry.tickets||0);
+          calSetC('css',     entry.css||0);
+          calSetC('decibel', entry.decibel||0);
+          const lbl=document.getElementById('cal-sync-label');
+          if(lbl) lbl.textContent='● Synced';
+        }
       }
       // Met à jour la cellule du calendrier
       const cell=document.querySelector(`.cal-cell[data-key="${k}"]`);
