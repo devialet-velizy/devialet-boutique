@@ -33,6 +33,15 @@
           return (current || 0) + delta;
         });
       },
+      // Écoute en temps réel un jour spécifique
+      listenDay(key, callback){
+        db.ref('boutique/'+key).on('value', snap => {
+          callback(snap.exists() ? snap.val() : null);
+        });
+      },
+      unlistenDay(key){
+        db.ref('boutique/'+key).off();
+      },
       onSync(callback){
         db.ref('boutique').on('value', snap => {
           callback(snap.exists() ? snap.val() : {});
@@ -920,6 +929,11 @@ async function renderCal(){
 }
 
 async function showDay(k,d){
+  // Arrête l'écoute du jour précédent
+  if(calCurrentKey && calCurrentKey !== k && window._fb && window._fb.USE_FIREBASE){
+    window._fb.unlistenDay(calCurrentKey);
+  }
+  calCurrentKey = k;
   document.querySelectorAll('.cal-cell').forEach(c=>c.classList.remove('sel'));
   event.currentTarget.classList.add('sel');
   const data=await getData();
@@ -929,7 +943,6 @@ async function showDay(k,d){
 
   const entrees=e.entrees||0, demos=e.demos||0, tickets=e.tickets||0;
   const css=e.css||0, decibel=e.decibel||0, note=e.note||'';
-  const rate=entrees>0?Math.round(demos/entrees*100):0;
 
   det.innerHTML=`<div class="panel">
     <h3 style="font-size:15px;font-weight:600;margin-bottom:16px">${label}</h3>
@@ -950,9 +963,28 @@ async function showDay(k,d){
     <textarea id="cal-note" rows="2" placeholder="Note du jour…" style="margin-bottom:0" oninput="calSave('${k}')">${note}</textarea>
     <div style="font-size:11px;color:var(--g4);margin-top:8px;text-align:right" id="cal-sync-label">✓ Sauvegarde auto</div>
   </div>`;
+
+  // Écoute Firebase directement sur ce jour
+  if(window._fb && window._fb.USE_FIREBASE){
+    window._fb.listenDay(k, entry => {
+      if(!entry) return;
+      liveData[k] = entry;
+      // Met à jour les compteurs si le panneau est toujours ouvert
+      if(calCurrentKey === k && document.getElementById('cal-entrees')){
+        calSetC('entrees', entry.entrees||0);
+        calSetC('demos',   entry.demos||0);
+        calSetC('tickets', entry.tickets||0);
+        calSetC('css',     entry.css||0);
+        calSetC('decibel', entry.decibel||0);
+        const lbl=document.getElementById('cal-sync-label');
+        if(lbl) lbl.textContent='● Synced';
+      }
+    });
+  }
 }
 
 let calCurrentKey = null;
+let calDayListening = false;
 
 function calGetC(f){ return parseInt(document.getElementById('cal-'+f)?.value)||0; }
 function calSetC(f,v){ const el=document.getElementById('cal-'+f); if(el) el.value=Math.max(0,v); }
