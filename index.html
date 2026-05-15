@@ -1024,16 +1024,7 @@ function calIncr(k,f){
     openCalModal(k);
     return;
   }
-  if(window._fb && window._fb.USE_FIREBASE){
-    isSaving = true;
-    window._fb.increment(k, f, 1).then(()=>{
-      setTimeout(()=>{ isSaving = false; }, 2000);
-      const lbl=document.getElementById('cal-sync-label');
-      if(lbl) lbl.textContent='● Synced';
-    });
-  } else {
-    calSave(k);
-  }
+  calSave(k);
 }
 
 function calDecr(k,f){
@@ -1045,21 +1036,8 @@ function calDecr(k,f){
     const visitors_cal = liveData[k]?.visitors||[];
     if(visitors_cal.length>0) visitors_cal.pop();
     liveData[k] = {...(liveData[k]||{}), visitors: visitors_cal};
-    isSaving = true;
-    calSave(k);
-    setTimeout(()=>{ isSaving = false; }, 2000);
-    return;
   }
-  if(window._fb && window._fb.USE_FIREBASE){
-    isSaving = true;
-    window._fb.increment(k, f, -1).then(()=>{
-      setTimeout(()=>{ isSaving = false; }, 2000);
-      const lbl=document.getElementById('cal-sync-label');
-      if(lbl) lbl.textContent='● Synced';
-    });
-  } else {
-    calSave(k);
-  }
+  calSave(k);
 }
 
 function openCalModal(k){
