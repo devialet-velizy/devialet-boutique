@@ -962,16 +962,16 @@ async function showDay(k,d){
 
   det.innerHTML=`<div class="panel">
     <h3 style="font-size:15px;font-weight:600;margin-bottom:16px">${label}</h3>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px">
       ${['entrees','demos','tickets','css','decibel'].map(f=>{
         const labels={entrees:'Entrées',demos:'Démos',tickets:'Tickets',css:'CSS',decibel:'Decibel'};
         const vals={entrees,demos,tickets,css,decibel};
-        return`<div class="counter-card" style="padding:12px">
+        return`<div class="counter-card" style="padding:14px">
           <div class="counter-label">${labels[f]}</div>
-          <div class="counter-body">
-            <button class="cnt-btn" onclick="calDecr('${k}','${f}')">−</button>
-            <input class="cnt-val" type="number" id="cal-${f}" value="${vals[f]}" min="0" style="font-size:24px" oninput="calSave('${k}')">
-            <button class="cnt-btn plus" onclick="calIncr('${k}','${f}')">+</button>
+          <div class="counter-body" style="justify-content:center;gap:16px">
+            <button class="cnt-btn" style="width:48px;height:48px;font-size:24px" onclick="calDecr('${k}','${f}')">−</button>
+            <input class="cnt-val" type="number" id="cal-${f}" value="${vals[f]}" min="0" style="font-size:32px;max-width:80px;text-align:center" oninput="calSave('${k}')">
+            <button class="cnt-btn plus" style="width:48px;height:48px;font-size:24px" onclick="calIncr('${k}','${f}')">+</button>
           </div>
         </div>`;
       }).join('')}
