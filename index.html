@@ -539,21 +539,33 @@ function monthDataSync(data,year,month){
 ════════════════════════════════════════════════════════════ */
 function initApp(){
   initSelectors();
+  // Affiche d'abord le localStorage en attendant Firebase
   liveData = localGet();
-  renderDash();
-  document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
-  upStats();
 
   if(window._fb && window._fb.USE_FIREBASE){
     setSyncStatus('spin','Connexion…');
+    // Attend la première réponse Firebase avant de render
+    let firstSync = true;
     window._fb.onSync(data => {
       liveData = data || {};
       localSet(liveData);
       setSyncStatus('ok','● Synced');
-      refreshCurrentPage();
+      if(firstSync){
+        firstSync = false;
+        // Premier sync : initialise tout
+        initSelectors();
+        renderDash();
+        document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+        upStats();
+      } else {
+        refreshCurrentPage();
+      }
     });
   } else {
     setSyncStatus('','Local');
+    renderDash();
+    document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+    upStats();
   }
 }
 
