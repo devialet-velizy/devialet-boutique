@@ -489,6 +489,7 @@ const QUARTERS   = [
 let visitors=[], vId=0, modalProfil=null, editKey=null, expOpen=false;
 let calY=new Date().getFullYear(), calM=new Date().getMonth();
 let liveData = {};
+let isSaving = false;
 
 /* ════════════════════════════════════════════════════════════
    DONNÉES — localStorage + Firebase temps réel
@@ -553,7 +554,7 @@ function initApp(){
       liveData = data || {};
       localSet(liveData);
       setSyncStatus('ok','● Synced');
-      refreshCurrentPage();
+      if(!isSaving) refreshCurrentPage();
     });
   } else {
     setSyncStatus('','Local');
@@ -962,11 +963,13 @@ function calIncr(k,f){
     openCalModal(k);
     return;
   }
-  // Transaction atomique Firebase
   if(window._fb && window._fb.USE_FIREBASE){
-    window._fb.increment(k, f, 1);
-    const lbl=document.getElementById('cal-sync-label');
-    if(lbl) lbl.textContent='● Synced';
+    isSaving = true;
+    window._fb.increment(k, f, 1).then(()=>{
+      setTimeout(()=>{ isSaving = false; }, 2000);
+      const lbl=document.getElementById('cal-sync-label');
+      if(lbl) lbl.textContent='● Synced';
+    });
   } else {
     calSave(k);
   }
@@ -981,15 +984,18 @@ function calDecr(k,f){
     const visitors_cal = liveData[k]?.visitors||[];
     if(visitors_cal.length>0) visitors_cal.pop();
     liveData[k] = {...(liveData[k]||{}), visitors: visitors_cal};
-    // Pour démos : on sauvegarde tout car on modifie aussi entrées
+    isSaving = true;
     calSave(k);
+    setTimeout(()=>{ isSaving = false; }, 2000);
     return;
   }
-  // Transaction atomique Firebase
   if(window._fb && window._fb.USE_FIREBASE){
-    window._fb.increment(k, f, -1);
-    const lbl=document.getElementById('cal-sync-label');
-    if(lbl) lbl.textContent='● Synced';
+    isSaving = true;
+    window._fb.increment(k, f, -1).then(()=>{
+      setTimeout(()=>{ isSaving = false; }, 2000);
+      const lbl=document.getElementById('cal-sync-label');
+      if(lbl) lbl.textContent='● Synced';
+    });
   } else {
     calSave(k);
   }
