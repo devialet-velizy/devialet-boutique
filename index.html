@@ -27,6 +27,12 @@
       save(key, entry){
         return db.ref('boutique/'+key).set(entry);
       },
+      // Transaction atomique pour incrémenter/décrémenter un champ
+      increment(key, field, delta){
+        return db.ref('boutique/'+key+'/'+field).transaction(current => {
+          return (current || 0) + delta;
+        });
+      },
       onSync(callback){
         db.ref('boutique').on('value', snap => {
           callback(snap.exists() ? snap.val() : {});
@@ -941,24 +947,40 @@ function calIncr(k,f){
   calSetC(f, calGetC(f)+1);
   if(f==='demos'){
     if(calGetC('demos') > calGetC('entrees')) calSetC('entrees', calGetC('demos'));
-    // Ouvre le modal profil
     openCalModal(k);
-    return; // calSave sera appelé dans confirmCalModal
+    return;
   }
-  calSave(k);
+  // Transaction atomique Firebase
+  if(window._fb && window._fb.USE_FIREBASE){
+    window._fb.increment(k, f, 1);
+    const lbl=document.getElementById('cal-sync-label');
+    if(lbl) lbl.textContent='● Synced';
+  } else {
+    calSave(k);
+  }
 }
+
 function calDecr(k,f){
   calCurrentKey = k;
   const cur=calGetC(f); if(cur<=0) return;
   calSetC(f, cur-1);
   if(f==='demos'){
     if(calGetC('entrees') > 0) calSetC('entrees', Math.max(calGetC('demos'), calGetC('entrees')-1));
-    // Retire le dernier visiteur
     const visitors_cal = liveData[k]?.visitors||[];
     if(visitors_cal.length>0) visitors_cal.pop();
     liveData[k] = {...(liveData[k]||{}), visitors: visitors_cal};
+    // Pour démos : on sauvegarde tout car on modifie aussi entrées
+    calSave(k);
+    return;
   }
-  calSave(k);
+  // Transaction atomique Firebase
+  if(window._fb && window._fb.USE_FIREBASE){
+    window._fb.increment(k, f, -1);
+    const lbl=document.getElementById('cal-sync-label');
+    if(lbl) lbl.textContent='● Synced';
+  } else {
+    calSave(k);
+  }
 }
 
 function openCalModal(k){
