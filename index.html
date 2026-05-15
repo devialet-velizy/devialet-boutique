@@ -566,11 +566,23 @@ function initApp(){
 function refreshCurrentPage(){
   const cur = document.querySelector('.page.active')?.id;
   if(!cur || cur==='p-dashboard') renderDash();
-  else if(cur==='p-calendrier') renderCal();
+  else if(cur==='p-calendrier'){
+    // Ne pas fermer le panneau si un jour est ouvert
+    const detailOpen = document.getElementById('cal-detail')?.innerHTML?.trim();
+    if(!detailOpen) renderCal();
+    // Si panneau ouvert : on met juste à jour les compteurs visibles
+    else if(calCurrentKey && liveData[calCurrentKey]){
+      const e = liveData[calCurrentKey];
+      calSetC('entrees', e.entrees||0);
+      calSetC('demos', e.demos||0);
+      calSetC('tickets', e.tickets||0);
+      calSetC('css', e.css||0);
+      calSetC('decibel', e.decibel||0);
+    }
+  }
   else if(cur==='p-saisons') renderSaisons();
   else if(cur==='p-comparaison') renderComparaison();
   else if(cur==='p-saisie') syncSaisieFromFirebase();
-  // Toujours mettre à jour la date
   if(document.getElementById('f-date') && !document.getElementById('f-date').value){
     document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
   }
