@@ -660,7 +660,9 @@ function go(id,tab){
   closeExp();
 }function toggleExp(e){e.stopPropagation();expOpen=!expOpen;document.getElementById('exp-dd').classList.toggle('open',expOpen);}
 function closeExp(){expOpen=false;document.getElementById('exp-dd').classList.remove('open');}
-document.addEventListener('click',closeExp);
+document.addEventListener('click', e => {
+  if(!e.target.closest('.export-wrap')) closeExp();
+});
 
 /* ════════════════════════════════════════════════════════════
    SELECTORS
@@ -975,6 +977,7 @@ async function showDay(k,d){
           <input type="number" id="cal-${f}" value="${vals[f]}" min="0"
             class="cnt-val"
             style="font-size:40px;margin:8px 0;border:2px solid transparent;border-radius:8px;width:100%;text-align:center"
+            onclick="event.stopPropagation()"
             onfocus="this.style.borderColor='var(--black)';this.select()"
             onblur="this.style.borderColor='transparent';calSave('${k}')"
             onkeydown="if(event.key==='Enter'){this.blur()}">
