@@ -920,7 +920,7 @@ async function renderCal(){
     const k=dk(calY,calM,d);const e=data[k];
     const isT=today.getDate()===d&&today.getMonth()===calM&&today.getFullYear()===calY;
     const dots=e?`<div class="cal-dots">${Array(Math.min(e.demos||0,6)).fill('<div class="cal-dot"></div>').join('')}</div><div class="cal-mini">${e.entrees||0} entr.</div>`:'';
-    html+=`<div class="cal-cell${e?' has-data':''}${isT?' today':''}" onclick="showDay('${k}',${d})"><div class="cal-num">${d}</div>${dots}</div>`;
+    html+=`<div class="cal-cell${e?' has-data':''}${isT?' today':''}" data-key="${k}" onclick="showDay('${k}',${d})"><div class="cal-num">${d}</div>${dots}</div>`;
   }
   let ld=last.getDay(); if(ld===0) ld=7;
   for(let i=1;i<=7-ld;i++) html+=`<div class="cal-cell other"><div class="cal-num" style="color:#c4c2bc">${i}</div></div>`;
@@ -1088,14 +1088,14 @@ function calSave(k){
     });
   }
   const d=parseInt(k.split('-')[2]);
-  const cell=document.querySelector(`.cal-cell[onclick*="${k}"]`);
+  const cell=document.querySelector(`.cal-cell[data-key="${k}"]`);
   if(cell){
     const dots=entry.demos>0?`<div class="cal-dots">${Array(Math.min(entry.demos,6)).fill('<div class="cal-dot"></div>').join('')}</div>`:'';
     const mini=entry.entrees>0?`<div class="cal-mini">${entry.entrees} entr.</div>`:'';
-    cell.className=`cal-cell${entry.entrees>0||entry.demos>0?' has-data':''}`;
+    const wasToday=cell.classList.contains('today');
+    const wasSel=cell.classList.contains('sel');
+    cell.className=`cal-cell${entry.entrees>0||entry.demos>0?' has-data':''}${wasToday?' today':''}${wasSel?' sel':''}`;
     cell.innerHTML=`<div class="cal-num">${d}</div>${dots}${mini}`;
-    cell.setAttribute('onclick',`showDay('${k}',${d})`);
-    cell.classList.add('sel');
   }
 }
 
